@@ -1,0 +1,86 @@
+[
+  {
+    "line": 1,
+    "elements": [
+      {
+        "line": 2,
+        "name": "Checkout a banana",
+        "description": "",
+        "id": "checkout;checkout-a-banana",
+        "type": "scenario",
+        "keyword": "Scenario",
+        "steps": [
+          {
+            "result": {
+              "error_message": "cucumber.api.PendingException: TODO: implement me\n\tat features.impl.CheckoutStepdefs.the_price_of_a_is_c(CheckoutStepdefs.java:12)\n\tat ✽.the price of a \"banana\" is 40c(classpath:features/checkout.feature:3)\n",
+              "duration": 1878321,
+              "status": "pending"
+            },
+            "line": 3,
+            "name": "the price of a \"banana\" is 40c",
+            "match": {
+              "arguments": [
+                {
+                  "val": "\"banana\"",
+                  "offset": 15
+                },
+                {
+                  "val": "40",
+                  "offset": 27
+                }
+              ],
+              "location": "CheckoutStepdefs.the_price_of_a_is_c(String,Integer)"
+            },
+            "keyword": "Given "
+          },
+          {
+            "result": {
+              "duration": 21360,
+              "status": "skipped"
+            },
+            "line": 4,
+            "name": "I checkout 1 \"banana\"",
+            "match": {
+              "arguments": [
+                {
+                  "val": "1",
+                  "offset": 11
+                },
+                {
+                  "val": "\"banana\"",
+                  "offset": 13
+                }
+              ],
+              "location": "CheckoutStepdefs.i_checkout(Integer,String)"
+            },
+            "keyword": "When "
+          },
+          {
+            "result": {
+              "duration": 20428,
+              "status": "skipped"
+            },
+            "line": 5,
+            "name": "the total price should be 40c",
+            "match": {
+              "arguments": [
+                {
+                  "val": "40",
+                  "offset": 26
+                }
+              ],
+              "location": "CheckoutStepdefs.the_total_price_should_be_c(Integer)"
+            },
+            "keyword": "Then "
+          }
+        ]
+      }
+    ],
+    "name": "Checkout",
+    "description": "",
+    "id": "checkout",
+    "keyword": "Feature",
+    "uri": "classpath:features/checkout.feature",
+    "tags": []
+  }
+]

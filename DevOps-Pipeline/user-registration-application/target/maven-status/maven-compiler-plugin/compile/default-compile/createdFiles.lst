@@ -1,0 +1,9 @@
+com/ewolff/user_registration/RegistrationApplication.class
+com/ewolff/user_registration/RegistrationApplicationServletInitializer.class
+com/ewolff/user_registration/service/RegistrationService$1.class
+com/ewolff/user_registration/domain/User.class
+com/ewolff/user_registration/RegistrationConfiguration.class
+com/ewolff/user_registration/service/GraphiteMetricsReporter.class
+com/ewolff/user_registration/service/RegistrationService.class
+com/ewolff/user_registration/web/RegistrationController.class
+com/ewolff/user_registration/web/EnglishRegistrationController.class

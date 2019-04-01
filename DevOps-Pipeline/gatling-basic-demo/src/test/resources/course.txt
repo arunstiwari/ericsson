@@ -1,0 +1,41 @@
+val httpProtocol = http.baseURL("http://localhost:8080");
+  
+  var newCourseApi = exec(
+                          http("Add New Course")
+                          .post("/course")
+                          .body(ElFileBody("course.json"))
+                          .header(HttpHeaderNames.ContentType,HttpHeaderValues.ApplicationJson)
+                          .check(status.is(201)))
+
+  var categories = Source.fromInputStream(getClass.getResourceAsStream("/course_categories.txt")).getLines().toList
+  
+  var courseTerm = Iterator.continually(buildCourseFeederData(categories))
+                          
+  var newCourseScenario = scenario("New Course")
+                                    .feed(courseTerm)
+                                    .exec(newCourseApi)
+                                    
+                                    
+  var getCoursesApi = exec(http("Get All Courses")
+                            .get("/courses")
+                            .check(status.is(200)))
+  
+  var getAllCoursesScenario = scenario("Fetch All Courses").exec(getCoursesApi) 
+                                    
+  setUp(newCourseScenario.inject(atOnceUsers(200)),
+        getAllCoursesScenario.inject(rampUsersPerSec(5).to(200).during(10))
+        )
+                .protocols(httpProtocol)
+                .assertions(
+                  global.responseTime.max.lessThan(800),
+                  global.successfulRequests.percent.greaterThan(95)
+                )
+
+  def buildCourseFeederData(categories: List[String]): Map[String,Any] = {
+      Map(
+          "courseId" -> Random.alphanumeric.take(3).mkString,
+          "courseName" -> Random.alphanumeric.take(5).mkString,
+          "category" -> categories(Random.nextInt(categories.size)),
+          "duration" -> Random.nextInt(2000)
+      )
+  }

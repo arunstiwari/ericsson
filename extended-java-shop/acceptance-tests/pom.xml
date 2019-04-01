@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>acceptance-tests</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+
+    <parent>
+        <groupId>com.github.quiram.shopping</groupId>
+        <artifactId>non-spring-boot-master-pom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../non-spring-boot-master-pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <serenity.version>1.9.10</serenity.version>
+        <serenity.maven.version>1.9.9</serenity.maven.version>
+        <logback-classic.version>1.2.3</logback-classic.version>
+        <jcl-over-slf4j.version>1.7.25</jcl-over-slf4j.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson-databind.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>${awaitility.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-core</artifactId>
+            <version>${serenity.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-junit</artifactId>
+            <version>${serenity.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${jcl-over-slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.quiram</groupId>
+            <artifactId>java-utils</artifactId>
+            <version>${java-utils.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${maven-failsafe-plugin.version}</version>
+                <configuration>
+                    <includes>
+                        <include>**/*AT.java</include>
+                    </includes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.dkanejs.maven.plugins</groupId>
+                <artifactId>docker-compose-maven-plugin</artifactId>
+                <version>${docker-compose-maven-plugin.version}</version>
+                <configuration>
+                    <composeFile>${project.basedir}/src/test/resources/docker-compose.yml</composeFile>
+                    <detachedMode>true</detachedMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>start-services</id>
+                        <goals>
+                            <goal>up</goal>
+                        </goals>
+                        <phase>pre-integration-test</phase>
+                    </execution>
+                    <execution>
+                        <id>stop-services</id>
+                        <goals>
+                            <goal>down</goal>
+                        </goals>
+                        <phase>post-integration-test</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.serenity-bdd.maven.plugins</groupId>
+                <artifactId>serenity-maven-plugin</artifactId>
+                <version>${serenity.maven.version}</version>
+                <executions>
+                    <execution>
+                        <id>serenity-reports</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>aggregate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <shopfront_ip>localhost</shopfront_ip>
+                                <feature_flags_ip>localhost</feature_flags_ip>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>within-Jenkins</id>
+            <!-- If there is a docker_network_name environment variable, use it, that means we are running in Jenkins. -->
+            <activation>
+                <property>
+                    <name>env.docker_network_name</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <!-- This is a bit hacky, but it does the trick. We can safely assume this IP is correct:
+                                    - This profile only activates when we are running inside Dockerised Jenkins
+                                    - Dockerised jenkins is configured to run in the subnet 172.19.0.0/16
+                                    - Docker assigns IP addresses sequentially
+                                    - 172.19.0.1 will be used for routing out of te subnet
+                                    - 172.19.0.2 will be assigned to the Jenkins docker container
+                                    - Six containers will start, with addresses from 172.19.0.3 to 172.19.0.8
+                                    - Feature Flags will be the penultimate to start
+                                    - Shopfront will be the last to start
+                                    - 172.19.0.7 will be assigned to Feature Flags
+                                    - 172.19.0.8 will be assigned to Shopfront
+
+                                    We can't use localhost because, from Jenkins docker container point of view, the
+                                    Shopfront docker container is not really listening on localhost
+                                -->
+                                <shopfront_ip>172.19.0.8</shopfront_ip>
+                                <feature_flags_ip>172.19.0.7</feature_flags_ip>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>com.dkanejs.maven.plugins</groupId>
+                        <artifactId>docker-compose-maven-plugin</artifactId>
+                        <configuration>
+                            <composeFile>${project.basedir}/src/test/resources/docker-compose-ci.yml</composeFile>
+                            <detachedMode>true</detachedMode>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>start-services</id>
+                                <goals>
+                                    <goal>up</goal>
+                                </goals>
+                                <phase>pre-integration-test</phase>
+                            </execution>
+                            <execution>
+                                <id>stop-services</id>
+                                <goals>
+                                    <goal>down</goal>
+                                </goals>
+                                <phase>post-integration-test</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

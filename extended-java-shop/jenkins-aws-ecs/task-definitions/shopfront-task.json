@@ -1,0 +1,25 @@
+{
+  "family": "shopfront",
+  "containerDefinitions": [
+    {
+      "image": "quiram/shopfront",
+      "name": "shopfront",
+      "cpu": 10,
+      "memory": 300,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8010,
+          "hostPort": 8010
+        }
+      ],
+      "healthCheck": {
+        "command": [ "CMD-SHELL", "curl -f http://localhost:8010/health || exit 1" ],
+        "interval": 10,
+        "timeout": 2,
+        "retries": 3,
+        "startPeriod": 30
+      }
+    }
+  ]
+}

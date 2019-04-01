@@ -1,0 +1,8 @@
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/RegistrationApplication.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/domain/User.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/web/RegistrationController.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/RegistrationConfiguration.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/RegistrationApplicationServletInitializer.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/service/GraphiteMetricsReporter.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/web/EnglishRegistrationController.java
+/Users/arun/training/ericsson/DevOps-Pipeline/user-registration-application/src/main/java/com/ewolff/user_registration/service/RegistrationService.java

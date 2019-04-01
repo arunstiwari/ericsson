@@ -1,0 +1,25 @@
+{
+  "family": "featureflags",
+  "containerDefinitions": [
+    {
+      "image": "quiram/featureflags",
+      "name": "featureflags",
+      "cpu": 10,
+      "memory": 300,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8040,
+          "hostPort": 8040
+        }
+      ],
+      "healthCheck": {
+        "command": [ "CMD-SHELL", "curl -f http://localhost:8040/health || exit 1" ],
+        "interval": 10,
+        "timeout": 2,
+        "retries": 3,
+        "startPeriod": 30
+      }
+    }
+  ]
+}

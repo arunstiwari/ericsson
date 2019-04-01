@@ -1,0 +1,1 @@
+1. As a User i should prepare a tea with normal flavor using vending machine

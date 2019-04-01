@@ -1,0 +1,25 @@
+{
+  "family": "external-adaptive-pricing",
+  "containerDefinitions": [
+    {
+      "image": "quiram/external-adaptive-pricing",
+      "name": "external-adaptive-pricing",
+      "cpu": 10,
+      "memory": 300,
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8050,
+          "hostPort": 8050
+        }
+      ],
+      "healthCheck": {
+        "command": [ "CMD-SHELL", "curl -f http://localhost:8050/health || exit 1" ],
+        "interval": 10,
+        "timeout": 2,
+        "retries": 3,
+        "startPeriod": 30
+      }
+    }
+  ]
+}

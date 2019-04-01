@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>featureflags</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>featureflags</name>
+    <description>Feature Flags Service</description>
+
+    <parent>
+        <groupId>com.github.quiram.shopping</groupId>
+        <artifactId>spring-boot-master-pom</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../spring-boot-master-pom.xml</relativePath>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.quiram</groupId>
+            <artifactId>java-utils</artifactId>
+            <version>${java-utils.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+        <!-- Test -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.quiram</groupId>
+            <artifactId>java-test-utils</artifactId>
+            <version>${java-test-utils.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <properties>
+        <test-db.port>55432</test-db.port>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <test_db_host>localhost:${test-db.port}</test_db_host>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.25.2</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <alias>test_db</alias>
+                                    <name>centos/postgresql-96-centos7</name>
+                                    <run>
+                                        <ports>
+                                            <port>${test-db.port}:5432</port>
+                                        </ports>
+                                        <env>
+                                            <POSTGRESQL_USER>testuser</POSTGRESQL_USER>
+                                            <POSTGRESQL_PASSWORD>test-password</POSTGRESQL_PASSWORD>
+                                            <POSTGRESQL_DATABASE>featureflags</POSTGRESQL_DATABASE>
+                                        </env>
+                                        <wait>
+                                            <log>Starting server...</log>
+                                            <time>20000</time>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>start</goal>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>within-Jenkins</id>
+            <!-- If there is a docker_network_name environment variable, use it, that means we are running in Jenkins. -->
+            <activation>
+                <property>
+                    <name>env.docker_network_name</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <!--
+                                    CONFIGURING THE IP
+                                    This is a bit hacky, but it does the trick. We can safely assume this IP is correct:
+                                    - This profile only activates when we are running inside Dockerised Jenkins
+                                    - Dockerised jenkins is configured to run in the subnet 172.19.0.0/16
+                                    - Docker assigns IP addresses sequentially
+                                    - 172.19.0.1 will be used for routing out of te subnet
+                                    - 172.19.0.2 will be assigned to the Jenkins docker container
+                                    - 172.19.0.3 will be assigned to the PostgreSQL docker container
+
+                                    We can't use localhost because, from Jenkins docker container point of view, the
+                                    PostgreSQL docker container is not really listening on localhost
+
+                                    CONFIGURING THE PORT
+                                    When inside the docker network the port is already forwarded, which means
+                                    we don't need to use the external port, but the internal one. -->
+                                <test_db_host>172.19.0.3:5432</test_db_host>
+                            </environmentVariables>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <version>0.25.2</version>
+                        <configuration>
+                            <images>
+                                <image>
+                                    <alias>test_db</alias>
+                                    <name>centos/postgresql-96-centos7</name>
+                                    <run>
+                                        <network>
+                                            <mode>custom</mode>
+                                            <name>${env.docker_network_name}</name>
+                                        </network>
+                                        <ports>
+                                            <port>${test-db.port}:5432</port>
+                                        </ports>
+                                        <env>
+                                            <POSTGRESQL_USER>testuser</POSTGRESQL_USER>
+                                            <POSTGRESQL_PASSWORD>test-password</POSTGRESQL_PASSWORD>
+                                            <POSTGRESQL_DATABASE>featureflags</POSTGRESQL_DATABASE>
+                                        </env>
+                                        <wait>
+                                            <log>Starting server...</log>
+                                            <time>20000</time>
+                                        </wait>
+                                    </run>
+                                </image>
+                            </images>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>start</goal>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

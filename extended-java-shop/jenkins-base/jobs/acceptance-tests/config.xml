@@ -1,0 +1,86 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<project>
+    <description></description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <hudson.model.StringParameterDefinition>
+                    <name>project_name</name>
+                    <description></description>
+                    <defaultValue>none</defaultValue>
+                    <trim>true</trim>
+                </hudson.model.StringParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.8.0">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+            <hudson.plugins.git.UserRemoteConfig>
+                <url>https://github.com/quiram/oreilly-cd-in-java</url>
+            </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+            <hudson.plugins.git.BranchSpec>
+                <name>*/master</name>
+            </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <submoduleCfg class="list"/>
+    </scm>
+    <canRoam>true</canRoam>
+    <disabled>false</disabled>
+    <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+    <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+    <triggers/>
+    <concurrentBuild>false</concurrentBuild>
+    <builders>
+        <hudson.tasks.Shell>
+            <command>echo &quot;Running acceptance tests for ${project_name}&quot;</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Shell>
+            <command>cat acceptance-tests/src/test/resources/docker-compose.yml acceptance-tests/src/test/resources/docker-compose-ci-network.yml | \
+sed -e s/"%network_placeholder%"/"${docker_network_name}"/ &gt; acceptance-tests/src/test/resources/docker-compose-ci.yml</command>
+        </hudson.tasks.Shell>
+        <hudson.tasks.Maven>
+            <targets>clean verify</targets>
+            <mavenName>Default</mavenName>
+            <pom>acceptance-tests/pom.xml</pom>
+            <usePrivateRepository>false</usePrivateRepository>
+            <settings class="jenkins.mvn.DefaultSettingsProvider"/>
+            <globalSettings class="jenkins.mvn.DefaultGlobalSettingsProvider"/>
+            <injectBuildVariables>false</injectBuildVariables>
+        </hudson.tasks.Maven>
+    </builders>
+    <publishers>
+        <htmlpublisher.HtmlPublisher plugin="htmlpublisher@1.16">
+            <reportTargets>
+                <htmlpublisher.HtmlPublisherTarget>
+                    <reportName>SerenityBDD</reportName>
+                    <reportDir>acceptance-tests/target/site/serenity</reportDir>
+                    <reportFiles>index.html</reportFiles>
+                    <alwaysLinkToLastBuild>true</alwaysLinkToLastBuild>
+                    <reportTitles>SerenityBDD</reportTitles>
+                    <keepAll>true</keepAll>
+                    <allowMissing>false</allowMissing>
+                    <includes>**/*</includes>
+                </htmlpublisher.HtmlPublisherTarget>
+            </reportTargets>
+        </htmlpublisher.HtmlPublisher>
+        <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.35.2">
+            <configs>
+                <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+                    <configs>
+                        <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
+                    </configs>
+                    <projects>deploy,</projects>
+                    <condition>SUCCESS</condition>
+                    <triggerWithNoParameters>false</triggerWithNoParameters>
+                    <triggerFromChildProjects>false</triggerFromChildProjects>
+                </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+            </configs>
+        </hudson.plugins.parameterizedtrigger.BuildTrigger>
+    </publishers>
+    <buildWrappers/>
+</project>

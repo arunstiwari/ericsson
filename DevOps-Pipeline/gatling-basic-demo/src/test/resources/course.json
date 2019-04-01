@@ -1,0 +1,6 @@
+{
+	"courseId": "${courseId}",
+    "courseName": "${courseName}",
+    "category": "${category}",
+    "duration": "${duration}"
+}

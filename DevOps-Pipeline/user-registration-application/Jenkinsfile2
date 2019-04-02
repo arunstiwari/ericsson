@@ -1,0 +1,77 @@
+pipeline {
+    agent none
+    stages {
+        stage('Build') {
+            agent any
+            steps {
+                checkout scm
+                sh 'make'
+                stash includes: '**/target/*.jar', name: 'app' 
+            }
+        }
+        stage('Unit Test') {
+            agent { 
+                label 'mac'
+            }
+            steps {
+                cd DevOps-Pipeline/user-registration-application 
+                sh 'mvn test'
+            }
+            post {
+                always {
+                    junit '**/target/*.xml'
+                }
+            }
+        }
+        stage('Mutation Test') {
+            agent { 
+                label 'mac'
+            }
+            steps {
+                cd DevOps-Pipeline/user-registration-application 
+                sh 'mvn org.pitest:pitest-maven:mutationCoverage'
+            }
+        }
+        stage('Checkstyle Analysis') {
+            agent { 
+                label 'mac'
+            }
+            steps {
+                cd DevOps-Pipeline/user-registration-application 
+                sh 'mvn checkstyle:checkstyle'
+            }
+        }
+        stage('Code Coverage Analysis') {
+            agent { 
+                label 'mac'
+            }
+            steps {
+                cd DevOps-Pipeline/user-registration-application 
+                sh 'mvn jacoco:report'
+            }post {
+                always {
+                    jacoco( 
+      					execPattern: 'target/*.exec',
+      					classPattern: 'target/classes',
+      					sourcePattern: 'src/main/java',
+      					exclusionPattern: 'src/test*'
+					)
+                }
+            }
+        }
+        stage('Test on Windows') {
+            agent {
+                label 'windows'
+            }
+            steps {
+                unstash 'app'
+                bat 'make check' 
+            }
+            post {
+                always {
+                    junit '**/target/*.xml'
+                }
+            }
+        }
+    }
+}

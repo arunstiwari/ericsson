@@ -43,7 +43,8 @@ pipeline {
             steps {
                 cd DevOps-Pipeline/user-registration-application 
                 sh 'mvn jacoco:report'
-            }post {
+            }
+            post {
                 always {
                     jacoco( 
       					execPattern: 'target/*.exec',
@@ -54,6 +55,5 @@ pipeline {
                 }
             }
         }
-       
     }
 }
